@@ -5,7 +5,7 @@
 
 # Installation
 
-### Use a Bundled Executable
+### Option 1: Use a Bundled Executable
 
 The easiest way to use this script is to download the bundled executable from the [releases page](https://github.com/codynhanpham/Ionomics-Raw-Data-Formatter/releases). A version for `Windows x64` machines is available. If you are using a different operating system or architecture, you will need to run the script with [Node.js](https://nodejs.org/en/download/) or package it yourself (see below).
 
@@ -13,7 +13,7 @@ The zip file contains the executable and the `datasets` folder. You will need to
 
 ---
 
-### Run with [Node.js](https://nodejs.org/en/download/)
+### Option 2: Run with [Node.js](https://nodejs.org/en/download/)
 
 The script was written in [Node.js](https://nodejs.org/en/download/), and that is the intended way to run it. You will need to have [Node.js](https://nodejs.org/en/download/) installed on your machine. You can download the latest version of **Node.js** for your machine [here](https://nodejs.org/en/download/).
 
@@ -30,7 +30,7 @@ node .
 
 ---
 
-### Package the Script
+### Option 3: Package the Script Yourself!
 
 If you want to package the script into a single executable, you can do so by first installing **Node.js** [here](https://nodejs.org/en/download/) and downloading this repository onto your machine. Then, from the root directory of the repository, open the terminal or command prompt and follow the instructions below.
 
