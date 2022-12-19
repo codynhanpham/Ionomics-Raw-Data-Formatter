@@ -1,0 +1,4 @@
+Run these two commands in the same directory as the package.json file:
+
+npx esbuild index.js --bundle --platform=node --target=node14 --outfile=build_node14.js
+npx pkg build_node14.js -t node14

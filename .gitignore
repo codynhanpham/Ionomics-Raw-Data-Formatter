@@ -1,0 +1,10 @@
+node_modules
+
+bundled-win-x64
+bundled-win-x64.zip
+
+build_node14.js
+build_node14.exe
+
+datasets/translation-table.xlsx
+test-datasets

@@ -1,0 +1,21 @@
+{
+  "name": "ionomics-raw-data-formatter",
+  "version": "1.0.0",
+  "description": "A script to organize and reformat the raw ionomics data.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "KovacsLab",
+    "Grapes",
+    "Ionomics"
+  ],
+  "author": "Cody Nhan Pham",
+  "license": "MIT",
+  "dependencies": {
+    "convert-csv-to-json": "^1.4.0",
+    "prompt-sync": "^4.2.0"
+  }
+}
