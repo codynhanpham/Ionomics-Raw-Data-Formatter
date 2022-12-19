@@ -3,7 +3,7 @@
 
 ---
 
-## Installation
+# Installation
 
 ### Use a Bundled Executable
 
@@ -53,7 +53,7 @@ npx pkg build_node14.js -t node14
 
 ---
 
-## Usage
+# Usage
 
 1. After downloading the raw datasets, even if they are already in the `.csv` format, it is best to open them in Excel or another spreadsheet program and save them as `.csv` files again as `CSV UTF-8 (Comma delimited) (*.csv)`. This will ensure that the files are properly formatted for the script.
 
@@ -72,7 +72,7 @@ npx pkg build_node14.js -t node14
 
 ---
 
-## Recommendations
+# Recommendations
 
 ### File Structure
 
@@ -103,7 +103,7 @@ In short, it would be nice to have all raw datasets in the same folder, and the 
 
 ---
 
-## Extra extra Details
+# Extra extra Details
 
 If there are any unhandled cases, the script will print out a `WARNING` line in yellow text. Most of the time, the sample which causes the error will be saved into either the `NO_GENOME_ID_<filename>.csv` or the `NO_PHENOLOGY_LEAFSTAGE_<filename>.csv` file(s) and can safely be dealt with manually later on.
 
