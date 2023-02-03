@@ -25,10 +25,41 @@ const convertedData = SortAndArrange.ConvertAll(rawData.data, rawData.sampleColu
 
 const sortedData = SortAndArrange.SortByValueOfKey(convertedData, "Time_and_Stage");
 
-const groupedData = SortAndArrange.GroupByKey(sortedData, "GenomeID");
+const groupedDataLocation = SortAndArrange.GroupByKey(sortedData, "Location");
+
+// for each location, group by GenomeID
+const groupedDataLocAndGenomeID = {};
+for (let location in groupedDataLocation) {
+    groupedDataLocAndGenomeID[location] = SortAndArrange.GroupByKey(groupedDataLocation[location], "GenomeID");
+}
+
+/*
+    So, the data here is something like this:
+    {
+        "MO": {
+            "GenomeID1": [
+                {
+                    "sample": "sampleName",
+                    "ID": 0,
+                    "elements": [Object],
+                    "Time_and_Stage": "Timepoint_Stage"
+                    ...
+                },
+                ...
+            ],
+            "GenomeID2": [
+                ...
+            ],
+            ...
+        },
+        "CO": {
+            ...
+        },
+    }
+*/
 
 const sortObject = obj => Object.keys(obj).sort().reduce((res, key) => (res[key] = obj[key], res), {});
-const sortedGroup = sortObject(groupedData);
+const sortedGroup = sortObject(groupedDataLocAndGenomeID);
 
 const csv = SortAndArrange.GenerateCSVFromData(sortedGroup, originalData, rawData.sampleColumnHeader);
 
@@ -73,8 +104,15 @@ if (!fs.existsSync(csvDirectory)) {
     fs.mkdirSync(csvDirectory);
 }
 
+// write the formatted data to the csv
 fs.writeFileSync(`${csvDirectory}\\FORMATTED_${csvName}.csv`, csv.formattedData, "utf8");
+// load the saved data again to sort it by GenomeID, very inefficient but it works for now
+let sortedCSV = CSVParser.parseCSV(`${csvDirectory}\\FORMATTED_${csvName}.csv`);
+sortedCSV = SortAndArrange.sortCSVbyColumn(sortedCSV, "GenomeID");
+fs.writeFileSync(`${csvDirectory}\\FORMATTED_${csvName}.csv`, sortedCSV, "utf8");
+
 if (csv.noGenomeIDData != "") {
+
     fs.writeFileSync(`${csvDirectory}\\NO_GENOME_ID_${csvName}.csv`, csv.noGenomeIDData, "utf8");
 }
 if (rawData.error) {

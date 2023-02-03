@@ -14,6 +14,37 @@ function SortByValueOfKey(data, key) {
     });
 }
 
+function sortCSVbyColumn(parsedCSV, columnHeader) { // returns a sorted csv string
+    let sortedCSV = parsedCSV.sort((a, b) => {
+        let aKey = a[columnHeader];
+        let bKey = b[columnHeader];
+        if (aKey < bKey) {
+            return -1;
+        } else if (aKey > bKey) {
+            return 1;
+        } else {
+            return 0;
+        }
+    });
+
+    // convert back to csv string
+    let csvString = "";
+    // headers
+    let headers = Object.keys(sortedCSV[0]);
+    csvString += headers.join(",") + "\n";
+    
+    for (let i = 0; i < sortedCSV.length; i++) {
+        let entry = sortedCSV[i];
+        for (let key in entry) {
+            csvString += `${entry[key]},`;
+        }
+        csvString = csvString.slice(0, csvString.length - 1);
+        csvString += "\n";
+    }
+
+    return csvString;
+}
+
 // ID to keep track of the samples, since the sample name alone is not unique
 function AddIDtoOriginalData(originalData) {
     // simply add a new ID key to the originalData
@@ -24,9 +55,16 @@ function AddIDtoOriginalData(originalData) {
     return originalData;
 }
 
+function hasOwnPropertyCaseInsensitive(obj, property) {
+    var props = [];
+    for (var i in obj) if (obj.hasOwnProperty(i)) props.push(i);
+    var prop;
+    while (prop = props.pop()) if (prop.toLowerCase() === property.toLowerCase()) return true;
+    return false;
+}
+
 // Make new Array with new Objects {
 //  "sample": "originalSampleName",
-//  "SampleWeight": "SampleWeight",
 //  "GenomeID": "genomeID",
 //  `${}element`: `${}element`,
 // }
@@ -41,6 +79,12 @@ function ConvertAll(data, sampleColumnHeader) {
         arrangedEntry["sample"] = data[i][sampleColumnHeader];
         arrangedEntry["GenomeID"] = data[i]["GenomeID"];
         arrangedEntry["ID"] = data[i]["ID"];
+        if (hasOwnPropertyCaseInsensitive(data[0], "location.x")) {
+            arrangedEntry["Location"] = data[i]["Location.x"] || data[i]["location.x"];
+        }
+        else {
+            arrangedEntry["Location"] = "_";
+        }
         // new elements key
         arrangedEntry["elements"] = {};
         // add all elements into arrangedEntry["elements"]
@@ -67,11 +111,11 @@ function GroupByKey(data, key) {
     let groupedData = {};
     // loop through all entries in data
     for (let i = 0; i < data.length; i++) {
-        // if the GenomeID is not in the groupedData object, add it
+        // if the key is not in the groupedData object, add it
         if (!groupedData.hasOwnProperty(data[i][key])) {
             groupedData[data[i][key]] = [];
         }
-        // push the entry to the GenomeID array
+        // push the entry to the key array
         groupedData[data[i][key]].push(data[i]);
     }
     return groupedData;
@@ -91,6 +135,8 @@ function GenerateAllPossibleTimeStageElementsCombinations() {
 
 const allPossibleTimeStageElementsCombinations = GenerateAllPossibleTimeStageElementsCombinations();
 
+
+
 // generate a csv file from the GroupedData
 // first row is the header, the rest are the data
 // first column is the GenomeID
@@ -100,55 +146,82 @@ const allPossibleTimeStageElementsCombinations = GenerateAllPossibleTimeStageEle
 function GenerateCSVFromData(GroupedData, rawDataWithID) {
     // must run AddIDtoOriginalData() first in the main script
     let csvData = "";
-    let noGenomeIDDataCSV = ""; // for the data with GenomeID "NA"
+    let noGenomeIDDataCSV = {}; // for the data with GenomeID "NA"
     // add header
     csvData += "GenomeID,";
+    csvData += "Location,";
+
     for (let i = 0; i < allPossibleTimeStageElementsCombinations.length; i++) {
         csvData += `${allPossibleTimeStageElementsCombinations[i]},`;
     }
     csvData += "\n";
+
     // add data
-    for (let key in GroupedData) {
-        // ignore GenomeID if it is "NA"
-        if (key != "NA") {
-            // add GenomeID
-            csvData += `${key},`;
-            // add all the elements
-            for (let i = 0; i < allPossibleTimeStageElementsCombinations.length; i++) {
-                // also loop through all the entries in each GenomeID group
-                let found = false;
-                for (let j = 0; j < GroupedData[key].length; j++) {
-                    // if the entry has the element, add it to the csv
-                    if (GroupedData[key][j].elements.hasOwnProperty(allPossibleTimeStageElementsCombinations[i])) {
-                        csvData += `${GroupedData[key][j].elements[allPossibleTimeStageElementsCombinations[i]]},`;
-                        found = true;
-                        break;
+    // Loop through each Location
+    for (let location in GroupedData) {
+
+        for (let key in GroupedData[location]) {
+            // ignore GenomeID if it is "NA"
+            if (key != "NA") {
+                // add GenomeID
+                csvData += `${key},`;
+    
+                csvData += `${location},`;
+    
+                // add all the elements
+                for (let i = 0; i < allPossibleTimeStageElementsCombinations.length; i++) {
+                    // also loop through all the entries in each GenomeID group
+                    let found = false;
+                    for (let j = 0; j < GroupedData[location][key].length; j++) {
+                        // if the entry has the element, add it to the csv
+                        if (GroupedData[location][key][j].elements.hasOwnProperty(allPossibleTimeStageElementsCombinations[i])) {
+                            csvData += `${GroupedData[location][key][j].elements[allPossibleTimeStageElementsCombinations[i]]},`;
+                            found = true;
+                            break;
+                        }
+                    }
+                    // if the entry does not have the element, add "NA" to the csv
+                    if (!found) {
+                        csvData += "NA,";
                     }
                 }
-                // if the entry does not have the element, add "NA" to the csv
-                if (!found) {
-                    csvData += "NA,";
-                }
+                csvData += "\n";
             }
-            csvData += "\n";
+            else {
+                console.log('\x1b[33m%s\x1b[0m', `\nWARNING: ${GroupedData[location][key].length} ${location} samples were not matched to GenomeIDs.`);
+                // return the data as in the original file
+    
+                const NAsampleIDs = [];
+                for (let i = 0; i < GroupedData[location][key].length; i++) {
+                    NAsampleIDs.push(GroupedData[location][key][i].ID);
+                }
+                
+                noGenomeIDDataCSV[location] = GenerateCSVofNA(NAsampleIDs, rawDataWithID);
+                
+            }
+        }
+    }
+
+    // pool all noGenomeIDDataCSV[location] into one csv string
+    // since the first row (header) is the same for all, only need to add the first row once
+    let noGenomeIDDataCSVString = "";
+    let firstRow = true;
+    for (let location in noGenomeIDDataCSV) {
+        if (firstRow) {
+            noGenomeIDDataCSVString += noGenomeIDDataCSV[location];
+            firstRow = false;
         }
         else {
-            console.log('\x1b[33m%s\x1b[0m', `\nWARNING: ${GroupedData[key].length} samples were not matched to GenomeIDs.`);
-            // return the data as in the original file
-
-            const NAsampleIDs = [];
-            for (let i = 0; i < GroupedData[key].length; i++) {
-                NAsampleIDs.push(GroupedData[key][i].ID);
-            }
-            
-            noGenomeIDDataCSV = GenerateCSVofNA(NAsampleIDs, rawDataWithID);
-            
+            // remove the first row (header)
+            let rows = noGenomeIDDataCSV[location].split("\n");
+            rows.shift();
+            noGenomeIDDataCSVString += rows.join("\n");
         }
     }
 
     return {
         formattedData: csvData,
-        noGenomeIDData: noGenomeIDDataCSV // if there is no NA at all, this will be ""
+        noGenomeIDData: noGenomeIDDataCSVString
     };
 }
 
@@ -186,4 +259,4 @@ function GenerateCSVofNA(sampleIDs, rawDataWithID) {
 
 
 
-export { AddIDtoOriginalData, SortByValueOfKey, ConvertAll, GroupByKey, GenerateCSVFromData };
+export { AddIDtoOriginalData, SortByValueOfKey, sortCSVbyColumn, ConvertAll, GroupByKey, GenerateCSVFromData };

@@ -25,7 +25,7 @@ function getSampleColumnHeader(dataTable, expectedColumnHeader) {
     let sampleColumnHeader = "";
     if (!expectedColumnHeader) {
         // there are a few column headers that are likely to be used, so we can check for them automatically first
-        let sampleColumnHeaders = ["sample"];
+        let sampleColumnHeaders = ["sample", "samplename"];
 
         // try to get rawData[i][sampleColumnHeader[j]] 10 times (rows) to see if it exists, if not, prompt the user to enter the sample column header
         for (let i = 0; i < 10; i++) {
